@@ -1,6 +1,7 @@
 <%@ page contentType="text/html" pageEncoding="UTF-8" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 
+
 <div id="content">
     <header class="bg-primary text-white text-center py-5">
         <div class="container">
@@ -95,3 +96,4 @@
         <p>&copy; 2025 Mega City Cab. All Rights Reserved.</p>
     </footer>
 </div>
+

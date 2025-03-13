@@ -1,83 +1,88 @@
+import com.megacitycab.model.User;
 import java.io.IOException;
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import java.io.PrintWriter;
 
 @WebServlet("/SignUp")
 public class SignUpServlet extends HttpServlet {
     private static final long serialVersionUID = 1L;
-    private static final Logger LOGGER = Logger.getLogger(SignUpServlet.class.getName());
 
-     // Database connection details
-    private static final String DB_URL = "jdbc:mysql://localhost:3306/cab_db";
-    private static final String DB_USER = "root";  // Default user for WAMP
-    private static final String DB_PASSWORD = "";  // Default password for WAMP (empty)
-
-    protected void doPost(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        String fullName = request.getParameter("fullname");
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        String fullname = request.getParameter("fullname");
+        String NIC = request.getParameter("NIC");
         String gender = request.getParameter("gender");
         String address = request.getParameter("address");
         String email = request.getParameter("email");
         String phone = request.getParameter("phone");
+        String imageURL = request.getParameter("imageURL");
         String username = request.getParameter("username");
         String password = request.getParameter("password");
 
-        response.setContentType("text/html");
-        PrintWriter out = response.getWriter();
+        if (fullname == null || fullname.isEmpty() || 
+            NIC == null || NIC.isEmpty() || 
+            gender == null || gender.isEmpty() || 
+            address == null || address.isEmpty() || 
+            email == null || email.isEmpty() || 
+            phone == null || phone.isEmpty() || 
+            imageURL == null || imageURL.isEmpty() || 
+            username == null || username.isEmpty() || 
+            password == null || password.isEmpty()) {
+            
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Missing required fields.");
+            return;
+        }
 
-        try {
-            // Load JDBC Driver
-            Class.forName("com.mysql.cj.jdbc.Driver");
-
-            // Establish connection
-            try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD)) {
-
-                // Insert query (OTP removed as it's not in the form)
-                String sql = "INSERT INTO users (fullname, gender, address, email, phone, username, password) VALUES (?, ?, ?, ?, ?, ?, ?)";
-                try (PreparedStatement stmt = conn.prepareStatement(sql)) {
-                    stmt.setString(1, fullName);
-                    stmt.setString(2, gender);
-                    stmt.setString(3, address);
-                    stmt.setString(4, email);
-                    stmt.setString(5, phone);
-                    stmt.setString(6, username);
-                    stmt.setString(7, password);
-
-                    int rowsInserted = stmt.executeUpdate();
-                    if (rowsInserted > 0) {
-                        // ✅ Show success popup and redirect
-                        out.println("<script type='text/javascript'>");
-                        out.println("alert('✅ Account created successfully!');");
-                        out.println("window.location='index.jsp';");
-                        out.println("</script>");
-                    } else {
-                        // ❌ Show failure popup and redirect
-                        out.println("<script type='text/javascript'>");
-                        out.println("alert('❌ Failed to create account!');");
-                        out.println("window.location='signUp.jsp';");
-                        out.println("</script>");
+        try (Connection conn = DBConnection.getConnection()) {
+            // Check if username, email, or NIC already exists
+            String checkSql = "SELECT COUNT(*) FROM users WHERE username = ? OR email = ? OR NIC = ?";
+            try (PreparedStatement checkStmt = conn.prepareStatement(checkSql)) {
+                checkStmt.setString(1, username);
+                checkStmt.setString(2, email);
+                checkStmt.setString(3, NIC);
+                try (ResultSet rs = checkStmt.executeQuery()) {
+                    rs.next();
+                    if (rs.getInt(1) > 0) {
+                        response.sendError(HttpServletResponse.SC_CONFLICT, "Username, email, or NIC already exists.");
+                        return;
                     }
                 }
             }
-        } catch (ClassNotFoundException e) {
-            LOGGER.log(Level.SEVERE, "MySQL JDBC Driver not found", e);
-            out.println("<script>alert('❌ Database driver not found!'); window.location='signUp.jsp';</script>");
+
+           
+
+            // Insert user
+            String sql = "INSERT INTO users (fullname, NIC, gender, address, email, phone, imageURL, username, password) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+                stmt.setString(1, fullname);
+                stmt.setString(2, NIC);
+                stmt.setString(3, gender);
+                stmt.setString(4, address);
+                stmt.setString(5, email);
+                stmt.setString(6, phone);
+                stmt.setString(7, imageURL);
+                stmt.setString(8, username);
+                stmt.setString(9, password);
+
+                int rowsInserted = stmt.executeUpdate();
+                if (rowsInserted > 0) {
+                    request.setAttribute("successMessage", "Registration successful! Please log in.");
+                    request.getRequestDispatcher("index.jsp").forward(request, response);
+                } else {
+                    request.setAttribute("errorMessage", "User registration failed.");
+                    request.getRequestDispatcher("signup.jsp").forward(request, response);
+                }
+
+            }
         } catch (SQLException e) {
-            LOGGER.log(Level.SEVERE, "Database error", e);
-            out.println("<script>alert('❌ Database error: " + e.getMessage() + "'); window.location='signUp.jsp';</script>");
-        } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, "Unexpected error", e);
-            out.println("<script>alert('❌ Unexpected error occurred!'); window.location='signUp.jsp';</script>");
+            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Database error.");
         }
     }
 }

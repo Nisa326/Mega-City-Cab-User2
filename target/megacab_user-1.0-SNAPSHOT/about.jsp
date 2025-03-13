@@ -9,6 +9,11 @@
     request.setAttribute("teamMembers", teamMembers);
 %>
 
+<body>
+
+    <!-- Include Navbar -->
+    <jsp:include page="navbar.jsp" />
+    
 <div id="content">
     <!-- Hero Section -->
     <header class="bg-primary text-white text-center py-5">
@@ -91,3 +96,4 @@
         <p>&copy; 2025 Mega City Cab. All Rights Reserved.</p>
     </footer>
 </div>
+</body>

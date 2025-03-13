@@ -7,7 +7,7 @@
     // Ensure user is logged in
     User loggedInUser = (User) session.getAttribute("user");
     if (loggedInUser == null) {
-        response.sendRedirect("signIn.jsp");
+        response.sendRedirect("index.jsp");
         return;
     }
 %>

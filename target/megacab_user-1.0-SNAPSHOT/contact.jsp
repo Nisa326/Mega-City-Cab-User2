@@ -1,6 +1,11 @@
 <%@ page contentType="text/html" pageEncoding="UTF-8" %>
 <%@page import="com.megacitycab.model.User"%>
 
+<body>
+
+    <!-- Include Navbar -->
+    <jsp:include page="navbar.jsp" />
+    
 <div id="content">
 
     <!-- Hero Section -->
@@ -8,7 +13,7 @@
         <div class="container">
             <h1 class="fw-bold">Contact Mega City Cab</h1>
             <p class="lead">We’re here to assist you 24/7.</p>
-            <a href="home.jsp" class="btn btn-light btn-lg text-primary fw-bold">
+            <a href="index.jsp" class="btn btn-light btn-lg text-primary fw-bold">
                 <i class="bi bi-arrow-left-circle"></i> Back to Home
             </a>
         </div>
@@ -89,7 +94,7 @@
         <div class="container">
             <h2 class="fw-bold">Need Help?</h2>
             <p>Contact our support team for assistance.</p>
-            <a href="home.jsp" class="btn btn-light text-primary btn-lg fw-bold">
+            <a href="index.jsp" class="btn btn-light text-primary btn-lg fw-bold">
                 <i class="bi bi-house-door"></i> Back to Home
             </a>
         </div>
@@ -101,3 +106,4 @@
     </footer>
 
 </div>
+</body>
